@@ -3,15 +3,13 @@ package com.udacity.gradle.builditbigger;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
-import android.util.Pair;
+import android.util.Log;
 
 import com.boredomdenied.mylibrary.JokeActivity;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
-import com.udacity.gradle.builditbigger.IdlingResource.SimpleIdlingResource;
 import com.udacity.gradle.builditbigger.backend.myApi.MyApi;
 
 import java.io.IOException;
@@ -19,8 +17,6 @@ import java.io.IOException;
 class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
     private static MyApi myApiService = null;
     private Context context;
-    private String apiStatus;
-    @Nullable private SimpleIdlingResource mIdlingResource;
 
 
 
@@ -48,13 +44,11 @@ class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
         context = params[0];
 
         try {
-            apiStatus = myApiService.sayHi("test").execute().getData();
-            if (mIdlingResource != null) {
-                mIdlingResource.setIdleState(false);
-            }
-            return apiStatus;
+
+            return myApiService.sayHi("test").execute().getData();
         } catch (IOException e) {
-            return e.getMessage();
+            Log.e("EndpointsAsyncTask", "call to GCE backend has failed");
+            return "";
         }
     }
 
@@ -63,10 +57,6 @@ class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
 
 
         if(result != null) {
-
-            if (mIdlingResource != null) {
-                mIdlingResource.setIdleState(true);
-            }
             Intent intent = new Intent(context, JokeActivity.class);
             intent.putExtra("joke", result);
             context.startActivity(intent);
